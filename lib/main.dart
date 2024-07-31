@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'controllers/customer_controller.dart';
+import 'views/customer_list.dart';
 
 void main() {
   runApp(MyApp());
@@ -7,10 +10,15 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'Customer CRUD App',
-
-      // home: CustomerListScreen(),
+    return ChangeNotifierProvider(
+      create: (context) => CustomerController(),
+      child: MaterialApp(
+        title: 'Customer CRUD',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: CustomerList(),
+      ),
     );
   }
 }
