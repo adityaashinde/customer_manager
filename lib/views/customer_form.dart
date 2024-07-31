@@ -114,7 +114,7 @@ class _CustomerFormState extends State<CustomerForm> {
                 decoration: InputDecoration(labelText: 'PAN'),
                 maxLength: 10,
                 validator: (value) {
-                  if (value == null || value.isEmpty || value.length != 10) {
+                  if (value == null || value.isEmpty) {
                     return 'Please enter a valid PAN';
                   }
                   return null;

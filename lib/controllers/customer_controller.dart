@@ -1,7 +1,7 @@
-import 'package:customer_manager/models/customer.dart';
-import 'package:customer_manager/models/address.dart';
-import 'package:customer_manager/services/api_service.dart';
 import 'package:flutter/material.dart';
+import '../models/customer.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class CustomerController with ChangeNotifier {
   List<Customer> _customers = [];
@@ -9,35 +9,45 @@ class CustomerController with ChangeNotifier {
   List<Customer> get customers => _customers;
 
   Future<void> addCustomer(Customer customer) async {
-    // validate customer PAN details
-    final panResponse = await ApiService.verifyPan(customer.pan);
-
-    if (panResponse['isValid']) {
-      customer.fullName = panResponse['fullName'];
-    } else {
-      throw Exception('Invalid PAN');
-    }
-
-    // add customer to list
     _customers.add(customer);
     notifyListeners();
   }
 
-  Future<void> getPostcodeDetails(Address address) async {
-    final response = await ApiService.getPostcodeDetails(address.postcode);
-
-    address.city = response['city'][0]['name'];
-    address.state = response['state'][0]['name'];
-    notifyListeners();
-  }
-
-  void updateCustomer(Customer customer, int index) {
+  Future<void> updateCustomer(Customer customer, int index) async {
     _customers[index] = customer;
     notifyListeners();
   }
 
-  void deleteCustomer(int index) {
+  Future<void> deleteCustomer(int index) async {
     _customers.removeAt(index);
     notifyListeners();
+  }
+
+  Future<Map<String, dynamic>> verifyPan(String pan) async {
+    final response = await http.post(
+      Uri.parse('https://lab.pixel6.co/api/verify-pan.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'panNumber': pan}),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to verify PAN');
+    }
+  }
+
+  Future<Map<String, dynamic>> getPostcodeDetails(String postcode) async {
+    final response = await http.post(
+      Uri.parse('https://lab.pixel6.co/api/get-postcode-details.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'postcode': postcode}),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to get postcode details');
+    }
   }
 }
